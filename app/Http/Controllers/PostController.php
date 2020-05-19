@@ -18,6 +18,10 @@ class PostController extends Controller
         // dd($posts);
         return view('posts.index', compact('posts'));
     }
+    public function published() {
+        $postsPublished = Post::where('published', '1')->get();
+        return view('posts.published', compact('postsPublished'));
+    }
 
     /**
      * Show the form for creating a new resource.
