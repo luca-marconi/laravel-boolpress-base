@@ -16,3 +16,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', 'PostController@index')->name('posts.index');
 
 Route::get('/published', 'PostController@published')->name('posts.published');
+
+Route::resource('posts', 'PostController'); // generiamo le rotte per la CRUD
