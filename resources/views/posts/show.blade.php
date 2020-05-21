@@ -19,6 +19,12 @@
         <img src="{{$post->img}}" alt="{{$post->title}}">
       </div>
       <a href="{{route('posts.edit', $post->id)}}">Modifica</a>
+      <form action="{{route('posts.destroy', $post->id)}}" method="POST">
+            @method('DELETE')
+            @csrf
+            <button type="submit">Elimina</button>
+          </form>
+  </td>
     </div>
   </div>
 
