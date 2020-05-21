@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use App\Post;
 
 class PostController extends Controller
@@ -76,6 +77,7 @@ class PostController extends Controller
      */
     public function show($id)
     {
+        $post = Post::where('id', $id)->first();
         return view('posts.show', compact('post'));
     }
 
@@ -85,9 +87,12 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Post $post)
     {
-        //
+        if (empty($post)) {
+            abort('404');
+        }
+        return view('posts.edit', compact('post'));
     }
 
     /**
@@ -97,10 +102,37 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-        //
-    }
+     public function update(Request $request, $id)
+     {
+       $post = Post::where('id', $id)->first();
+         if(empty($post)) {
+             abort('404');
+         }
+         $data = $request->all();  //prendo tutti i campi
+         $data['slug'] = Str::slug($data['title'] , '-') . '-' .rand(1,2147483647). '-' .rand(1,2147483647). '-' .rand(1,2147483647). '-' .rand(1,2147483647);
+         if(isset($data['published'])) {
+              $data['published'] = 1;
+         }
+         $validator = Validator::make($data, [
+               'title' => 'required|string|max:150',
+               'body' => 'required',
+               'author' => 'required'
+          ]);
+          if ($validator->fails()) {
+            return redirect('posts/create')
+                ->withErrors($validator)
+                ->withInput();
+          }
+          // Mi creo un nuovo oggetto
+          $post->fill($data);
+          // dd($post);
+          $saved = $post->update();
+          // dd($saved);
+          if(!$saved) {
+               abort(403, 'Unauthorized action.');
+          }
+          return redirect()->route('posts.show', $post->id);
+     }
 
     /**
      * Remove the specified resource from storage.
@@ -108,8 +140,15 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        //
-    }
+     public function destroy($id)
+     {
+         $post = Post::find($id);
+         if (empty($post)) {
+             abort('404');
+         }
+
+         $post->delete();
+
+         return redirect()->route('posts.index');
+     }
 }
